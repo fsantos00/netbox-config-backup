@@ -1,0 +1,14 @@
+# Network config backup.
+# Needs a runner that can reach NetBox and the devices (add `tags:` to pick it).
+# Define the variables under Settings > CI/CD > Variables (masked), and create a
+# pipeline schedule under Build > Pipeline schedules.
+# Required: NETBOX_API, NETBOX_TOKEN, NET_USER, NET_PASSWORD, BACKUP_REPO_URL
+# Optional: NET_ENABLE_PASSWORD
+
+backup:
+  image: python:3.14
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  script:
+    - sh ci/run-backup.sh

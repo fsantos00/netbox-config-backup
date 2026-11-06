@@ -1,0 +1,27 @@
+# Daily network config backup.
+# Needs a self-hosted runner with python3 that can reach NetBox and the devices.
+# Configure the secrets under Settings > Secrets and variables > Actions.
+name: Network config backup
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run backup
+        run: sh ci/run-backup.sh
+        env:
+          NETBOX_API: ${{ secrets.NETBOX_API }}
+          NETBOX_TOKEN: ${{ secrets.NETBOX_TOKEN }}
+          NET_USER: ${{ secrets.NET_USER }}
+          NET_PASSWORD: ${{ secrets.NET_PASSWORD }}
+          NET_ENABLE_PASSWORD: ${{ secrets.NET_ENABLE_PASSWORD }}
+          BACKUP_REPO_URL: ${{ secrets.BACKUP_REPO_URL }}

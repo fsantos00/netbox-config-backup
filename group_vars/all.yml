@@ -1,0 +1,3 @@
+---
+backup_repo_url: "{{ lookup('ansible.builtin.env', 'BACKUP_REPO_URL') }}"
+backup_dir: "{{ lookup('ansible.builtin.env', 'HOME') }}/configs-backups"

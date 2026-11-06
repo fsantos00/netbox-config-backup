@@ -1,0 +1,9 @@
+---
+# Applies to the "ios" group (NetBox platform slug). Rename this file if your slug differs.
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: cisco.ios.ios
+ansible_user: "{{ lookup('ansible.builtin.env', 'NET_USER') }}"
+ansible_password: "{{ lookup('ansible.builtin.env', 'NET_PASSWORD') }}"
+ansible_become: true
+ansible_become_method: ansible.netcommon.enable
+ansible_become_password: "{{ lookup('ansible.builtin.env', 'NET_ENABLE_PASSWORD') | default(ansible_password, true) }}"

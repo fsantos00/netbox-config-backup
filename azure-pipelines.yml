@@ -1,0 +1,34 @@
+# Daily network config backup.
+# Needs a self-hosted agent with python3 that can reach NetBox and the devices.
+# Create a variable group named "network-backup" holding the variables below
+# (mark the passwords and token as secret).
+trigger: none
+
+schedules:
+  - cron: "0 2 * * *"
+    displayName: Daily backup
+    branches:
+      include:
+        - main
+        - master
+    always: true
+
+pool:
+  name: Default  # change to your self-hosted agent pool
+
+variables:
+  - group: network-backup
+
+steps:
+  - checkout: self
+  - script: sh ci/run-backup.sh
+    displayName: Run backup
+    # Secret variables are not exposed to scripts automatically; map them explicitly.
+    env:
+      NETBOX_API: $(NETBOX_API)
+      NETBOX_TOKEN: $(NETBOX_TOKEN)
+      NET_USER: $(NET_USER)
+      NET_PASSWORD: $(NET_PASSWORD)
+      # Uncomment if you use a separate enable secret (an undefined $(VAR) stays literal):
+      # NET_ENABLE_PASSWORD: $(NET_ENABLE_PASSWORD)
+      BACKUP_REPO_URL: $(BACKUP_REPO_URL)

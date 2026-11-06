@@ -1,0 +1,48 @@
+---
+- name: Clone the backup repository
+  hosts: localhost
+  tasks:
+    - name: Fail early when the backup repository is not configured
+      ansible.builtin.assert:
+        that: backup_repo_url | length > 0
+        fail_msg: Set the BACKUP_REPO_URL environment variable.
+
+    - name: Freshly clone the backup repository
+      ansible.builtin.git:
+        repo: "{{ backup_repo_url }}"
+        dest: "{{ backup_dir }}"
+        force: true
+
+- name: Back up Cisco IOS configurations
+  hosts: ios
+  tasks:
+    - name: Save running configuration to the backup repository
+      cisco.ios.ios_config:
+        backup: true
+        backup_options:
+          filename: "{{ inventory_hostname }}.txt"
+          dir_path: "{{ backup_dir }}"
+
+- name: Commit, tag and push the backups
+  hosts: localhost
+  tasks:
+    - name: Commit changes, tag today's date and push
+      ansible.builtin.shell: |
+        set -e
+        git add -A
+        if ! git diff --cached --quiet; then
+          git commit -m "Config backup $(date '+%Y-%m-%d %H:%M:%S')"
+        fi
+        tag="$(date '+%Y-%m-%d')"
+        if ! git rev-parse --quiet --verify "refs/tags/$tag" >/dev/null; then
+          git tag -a "$tag" -m "Config backup"
+        fi
+        git push --follow-tags
+      args:
+        chdir: "{{ backup_dir }}"
+      environment:
+        GIT_AUTHOR_NAME: Ansible Backup
+        GIT_AUTHOR_EMAIL: ansible-backup@localhost
+        GIT_COMMITTER_NAME: Ansible Backup
+        GIT_COMMITTER_EMAIL: ansible-backup@localhost
+      changed_when: true

@@ -1,0 +1,22 @@
+---
+- name: Get device model and inventory data
+  hosts: ios
+  tasks:
+    - name: Gather hardware facts from Cisco IOS devices
+      cisco.ios.ios_facts:
+        gather_subset:
+          - hardware
+
+    - name: Print relevant facts
+      ansible.builtin.debug:
+        msg:
+          hostname: "{{ ansible_net_hostname }}"
+          image: "{{ ansible_net_image }}"
+          model: "{{ ansible_net_model }}"
+          stacked_models: "{{ ansible_net_stacked_models | default([]) }}"
+          serial_numbers: "{{ ansible_net_stacked_serialnums | default([]) }}"
+          role: "Switch"
+          manufacturer: "Cisco"
+          status: "active"
+          site: ""
+          management_ip: "{{ ansible_host | default(inventory_hostname) }}"

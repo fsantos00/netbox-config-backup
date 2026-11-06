@@ -1,0 +1,23 @@
+---
+# NetBox URL and token are read from the NETBOX_API and NETBOX_TOKEN environment variables.
+plugin: netbox.netbox.nb_inventory
+# Set to false only for lab NetBox instances with self-signed certificates.
+validate_certs: true
+config_context: false
+flatten_custom_fields: true
+virtual_chassis_name: true
+group_names_raw: true
+
+compose:
+  # Evaluated against the raw NetBox device. Uses the management_ip custom field when set,
+  # otherwise the primary IP (mask stripped). If neither exists it's skipped and Ansible uses the hostname.
+  ansible_host: (custom_fields.management_ip or primary_ip.address).split('/')[0]
+
+# Creates one group per NetBox platform slug (e.g. "ios").
+group_by:
+  - platforms
+
+# Only active devices tagged "backup" are included.
+device_query_filters:
+  - status: "active"
+  - tag: "backup"
